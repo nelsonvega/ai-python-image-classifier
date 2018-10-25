@@ -4,6 +4,7 @@ import json
 import time
 import copy
 import loader
+import argparse
 
 import seaborn as sns
 import numpy as np
@@ -152,8 +153,8 @@ if __name__=="__main__":
     else:
         checkpoint='ic-model.pth'
 
-    if(ars.category_names):
-        category_names=ars.category_names
+    if(args.category_names):
+        category_names=args.category_names
     else:
         category_names='cat_to_name.json'
 
@@ -168,7 +169,7 @@ if __name__=="__main__":
 
     # show prediction
 
-    show_prediction(image_path=input_name,probabilities=propabilities,labels= labels, categories= categories)
+    show_prediction(image_path=input_name,probabilities=probabilities,labels= labels, categories= categories)
 
 
 
