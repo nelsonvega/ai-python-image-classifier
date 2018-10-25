@@ -1,14 +1,9 @@
-# Imports here
-
 import json
 import time
 import copy
 
 import seaborn as sns
-import numpy as np
-import matplotlib.pyplot as plt
 
-from torch  import nn,optim
 import torch
 import torchvision
 import torch.nn.functional as F
@@ -16,25 +11,26 @@ from torch import nn
 from torchvision import datasets,transforms,models
 
 from collections import OrderedDict
-import torch.optim as optim
-from torch.optim import lr_scheduler
 
  
-def load_checkpoint(check_point='ic-model1.pth',arch='vgg19'):
+def load_checkpoint(check_point='ic-model.pth'):
    
+   # loading the checkpoint to the local storage, either the CPU or the GPU
     checkpoint = torch.load(check_point, map_location=lambda storage, loc: storage)
+
+    #reading values from the checkpoint
     arch = checkpoint['arch']
-    
     num_labels = len(checkpoint['class_to_idx'])
     hidden_units = checkpoint['hidden_units']
     state_dict=checkpoint['state_dict']
     
+    #loading the actual model based on the saved architecture
     if(arch == 'vgg19'):
         model = models.vgg19(pretrained=True)
     elif(arch =="alexnet"):
         model = models.alexnet(pretrained=True)
     elif(arch =='vgg16'):
-        vgg16 = models.vgg16(pretrained=True)
+        model = models.vgg16(pretrained=True)
     elif(arch =='squeezenet'):
         model = models.squeezenet1_0(pretrained=True)
     elif(arch =='densenet161'):
@@ -53,8 +49,13 @@ def load_checkpoint(check_point='ic-model1.pth',arch='vgg19'):
                           ('fc2', nn.Linear(hidden_units, 102)),
                           ('output', nn.LogSoftmax(dim=1))
                           ]))        
+    #Assign values
     model.classifier=classifier
     model.load_state_dict(state_dict)
     
     
     return model
+
+if __name__=="__main__":
+   model=load_checkpoint()
+   print (model) 
