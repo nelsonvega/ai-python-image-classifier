@@ -58,4 +58,4 @@ def load_checkpoint(check_point='ic-model.pth'):
 
 if __name__=="__main__":
    model=load_checkpoint()
-   print (model) 
+   print (model)

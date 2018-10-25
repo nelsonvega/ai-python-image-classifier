@@ -7,7 +7,7 @@ import seaborn as sns
 import numpy as np
 import matplotlib.pyplot as plt
 
-from torch  import nn,optim
+from torch  import nn
 import torch
 import torchvision
 import torch.nn.functional as F
@@ -20,14 +20,13 @@ from torch.optim import lr_scheduler
 
 
 parser = argparse.ArgumentParser()
-# Define command line argumentsparser = argparse.ArgumentParser()
-parser.add_argument('--data_dir', type=str, help='Path to dataset ')
-parser.add_argument('--gpu', action='store_true', help='Use GPU if available')
-parser.add_argument('--epochs', type=int, help='Number of epochs')
-parser.add_argument('--arch', type=str, help='Model architecture')
-parser.add_argument('--learning_rate', type=float, help='Learning rate')
-parser.add_argument('--hidden_units', type=int, help='Number of hidden units')
-parser.add_argument('--checkpoint', type=str, help='Save trained model checkpoint to file')
+
+parser.add_argument('--data_dir', type=str)
+parser.add_argument('--gpu', action='store_true')
+parser.add_argument('--epochs', type=int)
+parser.add_argument('--arch', type=str)
+parser.add_argument('--learning_rate', type=float)
+parser.add_argument('--hidden_units', type=int)
 
 args, _ = parser.parse_known_args()
 
@@ -77,16 +76,14 @@ def train_model(image_datasets,dataloader, arch='vgg19', hidden_units=4096,
     model.to(device)
 
     for epoch in range(num_epochs):
-        print('Epoch {}/{}'.format(epoch, num_epochs - 1))
+        print('Iteration {}/{}'.format(epoch, num_epochs - 1))
         print('-' * 10)
-
-        # Each epoch has a training and validation phase
         for phase in ['train', 'valid']:
             if phase == 'train':
                 scheduler.step()
-                model.train()  # Set model to training mode
+                model.train() 
             else:
-                model.eval()   # Set model to evaluate mode
+                model.eval()  
 
             running_loss = 0.0
             running_corrects = 0
@@ -96,11 +93,8 @@ def train_model(image_datasets,dataloader, arch='vgg19', hidden_units=4096,
                 inputs = inputs.to(device)
                 labels = labels.to(device)
 
-                # zero the parameter gradients
                 optimizer.zero_grad()
 
-                # forward
-                # track history if only in train
                 with torch.set_grad_enabled(phase == 'train'):
                     outputs = model(inputs)
                     _, preds = torch.max(outputs, 1)

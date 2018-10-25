@@ -111,28 +111,64 @@ def predict(image_path, model_name, topk=5, labels='', gpu=False):
 
 
 
-def show_prediction(image_path,model):
+def show_prediction(image_path,propabilities,labels, categories):
 
     plt.figure(figsize=(6,10))
     ax=plt.subplot(2,1,1)
-
-    with open('cat_to_name.json', 'r') as f:
-        label_mapper = json.load(f)
     
     flower_index=image_path.split('/')[2]
-    print(flower_index)
-    name=label_mapper[flower_index]
-    print(name)
+    name=categories[flower_index]
+ 
     img=process_image(image_path)
     imshow(img,ax)
     
-    probabilities,labels=predict(image_path,model)
     plt.subplot(2,1,2)
     sns.barplot(x=probabilities,y=labels,color=sns.color_palette()[0])
     plt.show()
 
 
-show_prediction(image_path='flowers/test/28/image_05230.jpg',model='ic-model.pth')
+
+if __name__=="__main__":
+
+    parser = argparse.ArgumentParser()
+
+    parser.add_argument('--input', type=str)
+    parser.add_argument('--gpu', action='store_true')
+    parser.add_argument('--epochs', type=int)
+    parser.add_argument('--checkpoint', type=str)
+    parser.add_argument('--category_names', type=str)
+    parser.add_argument('--top_k', type=int)
+
+
+    args, _ = parser.parse_known_args()
+
+    if (args.input):
+        input_name=args.input
+    else:
+        input_name='flowers/test/28/image_05230.jpg'
+
+    if(args.checkpoint):
+        checkpoint=args.checkpoint
+    else:
+        checkpoint='ic-model.pth'
+
+    if(ars.category_names):
+        category_names=ars.category_names
+    else:
+        category_names='cat_to_name.json'
+
+   # show_prediction(image_path=input_name,model=checkpoint,category_names=category_names)
+
+   
+    with open(category_names, 'r') as f:
+        categories = json.load(f)
+
+    # run the prediction
+    probabilities,labels=predict(input_name,checkpoint,topk=5,labels=categories)
+
+    # show prediction
+
+    show_prediction(image_path=input_name,probabilities=propabilities,labels= labels, categories= categories)
 
 
 
