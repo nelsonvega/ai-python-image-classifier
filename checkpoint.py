@@ -56,7 +56,7 @@ def load_checkpoint(check_point='ic-model.pth'):
     
     return model
 
-    
+
 def save_checkpoint(model,checkpoint_name='ic-model.pth',hidden_units=4096,class_to_idx=102):
     # TODO: Save the checkpoint 
 # Save a checkpoint 

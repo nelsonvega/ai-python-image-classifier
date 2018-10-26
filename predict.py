@@ -71,7 +71,7 @@ def process_image(image_path):
     
     np_image=np_image.transpose((2,0,1))
     
-    return np_image;
+    return np_image
 
 def predict(image_path, model_name, topk=5, labels='', gpu=False):
     ''' Predict the class (or classes) of an image using a trained deep learning model.
