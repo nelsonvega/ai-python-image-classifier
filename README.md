@@ -6,6 +6,10 @@ Project code for Udacity's AI Programming with Python Nanodegree program. In thi
 
 
 # Process
+1. Train the network
+2. Save the checkpoint
+3. Load the checkpoint
+4. 
 
 # Reference
 
