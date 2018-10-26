@@ -3,7 +3,7 @@
 import json
 import time
 import copy
-import loader
+import checkpoint
 import argparse
 
 import seaborn as sns
@@ -82,7 +82,7 @@ def predict(image_path, model_name, topk=5, labels='', gpu=False):
     with open('cat_to_name.json', 'r') as f:
         label_mapper = json.load(f)
 
-    model=loader.load_checkpoint(model_name)
+    model=checkpoint.load_checkpoint(model_name)
 
     img=process_image(image_path)
     

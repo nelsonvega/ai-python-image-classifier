@@ -56,6 +56,21 @@ def load_checkpoint(check_point='ic-model.pth'):
     
     return model
 
+    
+def save_checkpoint(model,checkpoint_name='ic-model.pth',hidden_units=4096,class_to_idx=102):
+    # TODO: Save the checkpoint 
+# Save a checkpoint 
+    model.class_to_idx =class_to_idx
+
+    checkpoint = {
+        'arch': 'VGG',
+        'class_to_idx': model.class_to_idx, 
+        'state_dict': model.state_dict(),
+        'hidden_units': hidden_units    
+    }
+
+    torch.save(checkpoint, checkpoint_name)
+
 if __name__=="__main__":
    model=load_checkpoint()
    print (model)

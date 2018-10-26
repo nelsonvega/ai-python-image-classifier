@@ -1,6 +1,8 @@
 import json
 import time
 import copy
+import initializer
+import checkpoint
 import argparse
 
 import seaborn as sns
@@ -18,17 +20,6 @@ from collections import OrderedDict
 import torch.optim as optim
 from torch.optim import lr_scheduler
 
-
-parser = argparse.ArgumentParser()
-
-parser.add_argument('--data_dir', type=str)
-parser.add_argument('--gpu', action='store_true')
-parser.add_argument('--epochs', type=int)
-parser.add_argument('--arch', type=str)
-parser.add_argument('--learning_rate', type=float)
-parser.add_argument('--hidden_units', type=int)
-
-args, _ = parser.parse_known_args()
 
 
 def train_model(image_datasets,dataloader, arch='vgg19', hidden_units=4096, 
@@ -88,7 +79,6 @@ def train_model(image_datasets,dataloader, arch='vgg19', hidden_units=4096,
             running_loss = 0.0
             running_corrects = 0
 
-            # Iterate over data.
             for inputs, labels in dataloaders[phase]:
                 inputs = inputs.to(device)
                 labels = labels.to(device)
@@ -120,7 +110,7 @@ def train_model(image_datasets,dataloader, arch='vgg19', hidden_units=4096,
                 best_acc = epoch_acc
                 best_model_wts = copy.deepcopy(model.state_dict())
 
-        print()
+
 
     time_elapsed = time.time() - since
     print('Training complete in {:.0f}m {:.0f}s'.format(
@@ -129,93 +119,59 @@ def train_model(image_datasets,dataloader, arch='vgg19', hidden_units=4096,
 
     # load best model weights
     model.load_state_dict(best_model_wts)
+
+
+    #if(save_dir and model_name):
+
+
     return model
 
 
+if __name__=="__main__":
 
-data_dir = args.data_dir
-train_dir = data_dir + '/train'
-valid_dir = data_dir + '/valid'
-test_dir = data_dir + '/test'
+    args=initializer.init_train_cmd_arguments()
 
-dirs = {'train': train_dir, 
-        'valid': valid_dir, 
-        'test' : test_dir}
-# TODO: Define your transforms for the training, validation, and testing sets
-data_transforms  = {
-    'train': transforms.Compose([
-        transforms.RandomRotation(45),
-        transforms.RandomResizedCrop(224),
-        transforms.RandomHorizontalFlip(),
-        transforms.ToTensor(),
-        transforms.Normalize([0.485, 0.456, 0.406], 
-                                [0.229, 0.224, 0.225])
-    ]),
-    'valid': transforms.Compose([
-        transforms.Resize(256),
-        transforms.CenterCrop(224),
-        transforms.ToTensor(),
-        transforms.Normalize([0.485, 0.456, 0.406], 
-                                [0.229, 0.224, 0.225])
-    ]),
-    'test': transforms.Compose([
-        transforms.Resize(256),
-        transforms.CenterCrop(224),
-        transforms.ToTensor(),
-        transforms.Normalize([0.485, 0.456, 0.406], 
-                                [0.229, 0.224, 0.225])
-    ]),
-}
+    image_datasets,dataloaders,dataset_sizes,class_names=initializer.init(root_dir="flowers",stages=['train','valid','test'],train_stage='train')
 
+    if(args.epochs):
+        eps=args.epochs,
+    else:
+        eps=25
+    if(args.learning_rate):
+        learning_rate=args.learning_rate
+    else:
+        learning_rate=0.001
 
-# TODO: Load the datasets with ImageFolder
-image_datasets = {x: datasets.ImageFolder(dirs[x],   transform=data_transforms[x]) for x in ['train', 'valid', 'test']}
+    if(args.hidden_units):
+        hidden_units=args.hidden_units
+    else:
+        hidden_units=4096
 
-# TODO: Using the image datasets and the trainforms, define the dataloaders
-dataloaders = {x: torch.utils.data.DataLoader(image_datasets[x], batch_size=32, shuffle=True) for x in ['train', 'valid', 'test']}
+    if(args.gpu):
+        device='gpu'
+    else:
+        device='cpu'
 
-dataset_sizes = {x: len(image_datasets[x]) 
-                                for x in ['train', 'valid', 'test']}
-class_names = image_datasets['train'].classes
+    if(args.arch):
+        architecture=args.arch
+    else:
+        architecture='vgg19'
 
-print (dataset_sizes)
-print (class_names)
+    if(args.checkpoint_name):
+        checkpoint_name=args.checkpoint_name
+    else:
+        checkpoint_name='ic-model.pth'
 
-import json
+    if(args.root_dir):
+        root_dir=args.root_dir
+    else:
+        root_dir='/'
 
-with open('cat_to_name.json', 'r') as f:
-    label_mapper = json.load(f)
-        
+    model = train_model(image_datasets=image_datasets,dataloader=dataloaders, 
+                arch=architecture, hidden_units=hidden_units, 
+                num_epochs=eps, 
+                learning_rate=learning_rate, device=device)
 
+    print(model)
 
-if(args.epochs):
-    eps=args.epochs
-else:
-    eps=25
-
-
-if(args.learning_rate):
-    learning_rate=args.learning_rate
-else:
-    learning_rate=0.001
-
-if(args.hidden_units):
-    hidden_units=args.hidden_units
-else:
-    hidden_units=4096
-
-if(args.gpu):
-    device='gpu'
-else:
-    device='cpu'
-
-if(args.arch):
-    architecture=args.arch
-else:
-    architecture='vgg19'
-
-
-model_ft = train_model(image_datasets=image_datasets,dataloader=dataloaders, 
-            arch=architecture, hidden_units=hidden_units, 
-            num_epochs=eps, 
-            learning_rate=learning_rate, device=device)
+    checkpoint.save_checkpoint(model,hidden_units,image_datasets['train'].class_to_idx)
