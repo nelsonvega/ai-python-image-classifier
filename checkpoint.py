@@ -25,7 +25,10 @@ def load_checkpoint(check_point='ic-model.pth'):
     state_dict=checkpoint['state_dict']
     
     #loading the actual model based on the saved architecture
-    if(arch == 'vgg19'):
+
+    print('Architecture:'+arch)
+    if(arch == 'VGG'):
+        print('vgg selected')
         model = models.vgg19(pretrained=True)
     elif(arch =="alexnet"):
         model = models.alexnet(pretrained=True)
@@ -63,7 +66,7 @@ def save_checkpoint(model,checkpoint_name='ic-model.pth',hidden_units=4096,class
     model.class_to_idx =class_to_idx
 
     checkpoint = {
-        'arch': 'VGG',
+        'arch': 'vgg19',
         'class_to_idx': model.class_to_idx, 
         'state_dict': model.state_dict(),
         'hidden_units': hidden_units    
