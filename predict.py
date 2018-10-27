@@ -3,7 +3,7 @@
 import json
 import time
 import copy
-import checkpoint
+import checkpoint as loader
 import argparse
 
 import seaborn as sns
@@ -73,7 +73,7 @@ def process_image(image_path):
     
     return np_image
 
-def predict(image_path, model_name, topk=5, labels='', gpu=False):
+def predict(image_path, model_name, topk=5, categories='', gpu=False):
     ''' Predict the class (or classes) of an image using a trained deep learning model.
     '''
     
@@ -82,7 +82,7 @@ def predict(image_path, model_name, topk=5, labels='', gpu=False):
     with open('cat_to_name.json', 'r') as f:
         label_mapper = json.load(f)
 
-    model=checkpoint.load_checkpoint(model_name)
+    model=loader.load_checkpoint(model_name)
 
     img=process_image(image_path)
     
@@ -98,21 +98,27 @@ def predict(image_path, model_name, topk=5, labels='', gpu=False):
     
     probs=firstTopX.detach().numpy().tolist()[0]
     SecondTopX=SecondTopX.detach().numpy().tolist()[0]
+    print('first')
+    print(firstTopX)
+    print('second')
+    print(SecondTopX)
+    # Convert indices to classes
+    idx_to_class = {val: key for key, val in    
+                                      categories.items()}
+    print("idx")
+    print(idx_to_class.items())
+    print('label_mapper')
+    print(label_mapper)
+    labels = [label_mapper[str(lab)] for lab in SecondTopX]
+    print('labels')
+    print(labels)
     
-    
-    class_to_idx = {class_names[i]: i for i in range(len(labels))}
-    
-    idx_to_class={val: key for key, val in class_to_idx.items()}
-    
-    labels_idx=[idx_to_class[lab] for lab in SecondTopX]
-    
-    labels=[[label_mapper[idx_to_class[lab]]][0] for lab in SecondTopX]
     
     return probs,labels
 
 
 
-def show_prediction(image_path,propabilities,labels, categories):
+def show_prediction(image_path,probabilities,labels, categories):
 
     plt.figure(figsize=(6,10))
     ax=plt.subplot(2,1,1)
@@ -124,7 +130,7 @@ def show_prediction(image_path,propabilities,labels, categories):
     imshow(img,ax)
     
     plt.subplot(2,1,2)
-    sns.barplot(x=probabilities,y=labels,color=sns.color_palette()[0])
+    print('ready to show')
     plt.show()
 
 
@@ -165,10 +171,12 @@ if __name__=="__main__":
         categories = json.load(f)
 
     # run the prediction
-    probabilities,labels=predict(input_name,checkpoint,topk=5,labels=categories)
+    probabilities,labels=predict(input_name,checkpoint,topk=5,categories=categories)
 
     # show prediction
-
+    print('predict results')
+    print(probabilities)
+    print(labels)
     show_prediction(image_path=input_name,probabilities=probabilities,labels= labels, categories= categories)
 
 

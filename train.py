@@ -174,4 +174,4 @@ if __name__=="__main__":
 
     print(model)
 
-    checkpoint.save_checkpoint(model,hidden_units,image_datasets['train'].class_to_idx)
+    checkpoint.save_checkpoint(model,checkpoint_name,hidden_units,image_datasets['train'].class_to_idx)
