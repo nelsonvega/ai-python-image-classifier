@@ -13,17 +13,20 @@ from torchvision import datasets,transforms,models
 from collections import OrderedDict
 
  
-def load_checkpoint(check_point='ic-model.pth'):
+def load_checkpoint(check_point='ic-model.pth',gpu="True"):
    
    # loading the checkpoint to the local storage, either the CPU or the GPU
-    checkpoint = torch.load(check_point, map_location=lambda storage, loc: storage)
-
+    if(gpu):
+        checkpoint = torch.load(check_point)
+    else:
+        checkpoint = torch.load(check_point, map_location=lambda storage, loc: storage)
+    
     #reading values from the checkpoint
     arch = checkpoint['arch']
     num_labels = len(checkpoint['class_to_idx'])
     hidden_units = checkpoint['hidden_units']
     state_dict=checkpoint['state_dict']
-    
+
     #loading the actual model based on the saved architecture
 
     print('Architecture:'+arch)
@@ -42,21 +45,21 @@ def load_checkpoint(check_point='ic-model.pth'):
         model = models.inception_v3(pretrained=True)
     for param in model.parameters():
         param.requires_grad = False
-    
+
     model.class_to_idx = num_labels
             
-   #  Create the classifier
+    #  Create the classifier
     classifier = nn.Sequential(OrderedDict([
-                          ('fc1', nn.Linear(25088, hidden_units)),
-                          ('relu', nn.ReLU()),
-                          ('fc2', nn.Linear(hidden_units, 102)),
-                          ('output', nn.LogSoftmax(dim=1))
-                          ]))        
+                            ('fc1', nn.Linear(25088, hidden_units)),
+                            ('relu', nn.ReLU()),
+                            ('fc2', nn.Linear(hidden_units, 102)),
+                            ('output', nn.LogSoftmax(dim=1))
+                            ]))        
     #Assign values
     model.classifier=classifier
     model.load_state_dict(state_dict)
-    
-    
+
+
     return model
 
 
