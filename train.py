@@ -28,18 +28,25 @@ def train_model(image_datasets,dataloaders,dataset_sizes, arch='vgg19', hidden_u
     
     # TODO: Build and train your network
 
+    input_size=25088
     if(arch == 'vgg19'):
         model = models.vgg19(pretrained=True)
     elif(arch =="alexnet"):
         model = models.alexnet(pretrained=True)
+        input_size=9216
     elif(arch =='vgg16'):
-        vgg16 = models.vgg16(pretrained=True)
+        model = models.vgg16(pretrained=True)
     elif(arch =='squeezenet'):
         model = models.squeezenet1_0(pretrained=True)
+        input_size=21725184
     elif(arch =='densenet161'):
         model = models.densenet161(pretrained=True)
     else:
         model = models.inception_v3(pretrained=True)
+
+    
+      # Features, removing the last layer
+    print('arch'+arch+'input size:'+str(input_size))
     
     # Criteria NLLLoss which is recommended with Softmax final layer
     criterion = nn.NLLLoss()
@@ -49,7 +56,7 @@ def train_model(image_datasets,dataloaders,dataset_sizes, arch='vgg19', hidden_u
     scheduler = lr_scheduler.StepLR(optimizer, step_size=4, gamma=0.1)
     
     classifier = nn.Sequential(OrderedDict([
-                              ('fc1', nn.Linear(25088, hidden_units)),
+                              ('fc1', nn.Linear(input_size, hidden_units)),
                               ('relu', nn.ReLU()),
                               ('fc2', nn.Linear(hidden_units, 102)),
                               ('output', nn.LogSoftmax(dim=1))
