@@ -148,7 +148,7 @@ if __name__=="__main__":
         hidden_units=4096
 
     if(args.gpu):
-        device='gpu'
+        device='cuda'
     else:
         device='cpu'
 
