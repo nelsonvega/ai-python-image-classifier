@@ -9,6 +9,7 @@ import argparse
 import seaborn as sns
 import numpy as np
 import matplotlib.pyplot as plt
+from torch.autograd import Variable
 
 from torch  import nn,optim
 import torch
@@ -24,6 +25,7 @@ from torch.optim import lr_scheduler
 
 
 def imshow(image, ax=None, title=None):
+ 
     if ax is None:
         fig, ax = plt.subplots()
     
@@ -42,38 +44,50 @@ def imshow(image, ax=None, title=None):
     ax.imshow(image)
     
     return ax
-
 def process_image(image_path):
     ''' Scales, crops, and normalizes a PIL image for a PyTorch model,
         returns an Numpy array
     '''
 
-    image_pil=Image.open(image_path)
+    #image_pil=Image.open(image_path)
+
+    loader = transforms.Compose([
+        transforms.Resize(256), 
+        transforms.CenterCrop(224), 
+        transforms.ToTensor()])
     
-    cropped_size=256,256
+    image_pl = Image.open(image_path)
+    imagepl_ft = loader(image_pl).float()
     
-    image_pil.thumbnail(cropped_size)
+    #cropped_size=256,256
     
-    left_margin = (image_pil.width-224)/2
-    bottom_margin = (image_pil.height-224)/2
-    right_margin = left_margin + 224
-    top_margin = bottom_margin + 224
-    image_pil = image_pil.crop((left_margin, bottom_margin, right_margin,
-                     top_margin))
+    #image_pil.thumbnail(cropped_size)
+    
+    #left_margin = (image_pil.width-224)/2
+    #bottom_margin = (image_pil.height-224)/2
+    #right_margin = left_margin + 224
+    #top_margin = bottom_margin + 224
+    #image_pil = image_pil.crop((left_margin, bottom_margin, right_margin,
+    #                 top_margin))
    
-    np_image=np.array(image_pil)
     
-    np_image=np_image/255
+    np_image=np.array(imagepl_ft)
+    
+    #np_image=np_image/255
     
     mean = np.array([0.485, 0.456, 0.406]) 
     std = np.array([0.229, 0.224, 0.225])
-    np_image = (np_image - mean)/std
+    #np_image = (np_image - mean)/std
     
-    np_image=np_image.transpose((2,0,1))
+    #np_image=np_image.transpose((2,0,1))
+
+    np_image = (np.transpose(np_image, (1, 2, 0)) - mean)/std    
+    np_image = np.transpose(np_image, (2, 0, 1))
+
     
     return np_image
 
-def predict(image_path, model_name, topk=5, categories='', gpu=False):
+def predict(image_path, model_name, topk=10, categories='', gpu=False):
     ''' Predict the class (or classes) of an image using a trained deep learning model.
     '''
     
@@ -96,25 +110,28 @@ def predict(image_path, model_name, topk=5, categories='', gpu=False):
     
     firstTopX,SecondTopX=expResult.topk(topk)
     
-    probs=firstTopX.detach().numpy().tolist()[0]
-    SecondTopX=SecondTopX.detach().numpy().tolist()[0]
-    print('first')
+    #probs = torch.nn.functional.softmax(firstTopX.data, dim=1).numpy()[0]
+    #classes = SecondTopX.data.numpy()[0]
+
+    probs = firstTopX.detach().numpy().tolist()[0] 
+    classes = SecondTopX.detach().numpy().tolist()[0]
+    
+    print('top x')
     print(firstTopX)
-    print('second')
-    print(SecondTopX)
+
     # Convert indices to classes
     idx_to_class = {val: key for key, val in    
-                                      categories.items()}
-    print("idx")
-    print(idx_to_class.items())
-    print('label_mapper')
-    print(label_mapper)
-    labels = [label_mapper[str(lab)] for lab in SecondTopX]
-    print('labels')
-    print(labels)
-    
-    
-    return probs,labels
+                                      model.class_to_idx.items()}
+    #labels = [label_mapper[str(lab)] for lab in SecondTopX]
+    print('secondtopx')
+    print(SecondTopX)
+    print("idxto class")
+    print(idx_to_class)
+    labels  = [idx_to_class[y] for y in classes]
+    flowers=[categories[idx_to_class[i]] for i in classes]
+    print('flowers')
+    print(flowers)
+    return probs,flowers
 
 
 
@@ -125,12 +142,11 @@ def show_prediction(image_path,probabilities,labels, categories):
     
     flower_index=image_path.split('/')[2]
     name=categories[flower_index]
- 
     img=process_image(image_path)
     imshow(img,ax)
     
     plt.subplot(2,1,2)
-    print('ready to show')
+    sns.barplot(x=probabilities,y=labels,color=sns.color_palette()[0])
     plt.show()
 
 

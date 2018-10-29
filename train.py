@@ -181,5 +181,5 @@ if __name__=="__main__":
                 learning_rate=learning_rate, device=device)
 
     print(model)
-
-    checkpoint.save_checkpoint(model,checkpoint_name,hidden_units,image_datasets['train'].class_to_idx)
+    class_to_idx=image_datasets['train'].class_to_idx
+    checkpoint.save_checkpoint(model=model,checkpoint_name=checkpoint_name,hidden_units=hidden_units,class_to_idx=class_to_idx)

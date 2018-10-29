@@ -22,7 +22,6 @@ def load_checkpoint(checkpoint_name='ic-model.pth',gpu="True"):
         checkpoint = torch.load(checkpoint_name, map_location=lambda storage, loc: storage)
 
     hidden_units = checkpoint['hidden_units']
-    print(checkpoint)
     if(not (checkpoint.get('classifier') is None)):
 
         model = getattr(torchvision.models, checkpoint['arch'])(pretrained=True)
@@ -39,7 +38,6 @@ def load_checkpoint(checkpoint_name='ic-model.pth',gpu="True"):
 
         #loading the actual model based on the saved architecture
 
-        print('Architecture:'+arch)
         if(arch == 'VGG'):
             print('vgg selected')
             model = models.vgg19(pretrained=True)
@@ -68,12 +66,12 @@ def load_checkpoint(checkpoint_name='ic-model.pth',gpu="True"):
         #Assign values
         model.classifier=classifier
 
-    model.class_to_idx = len(checkpoint['class_to_idx'])
+    model.class_to_idx = checkpoint['class_to_idx']
     model.load_state_dict(checkpoint['state_dict'])
     return model
 
 
-def save_checkpoint(model,checkpoint_name='ic-model.pth',hidden_units=4096,class_to_idx=102):
+def save_checkpoint(model,checkpoint_name='ic-model.pth',hidden_units=4096,class_to_idx={}):
     # TODO: Save the checkpoint 
 # Save a checkpoint 
     model.class_to_idx =class_to_idx
