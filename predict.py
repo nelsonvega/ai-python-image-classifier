@@ -96,7 +96,7 @@ def predict(image_path, model_name, topk=10, categories='', gpu=False):
     with open('cat_to_name.json', 'r') as f:
         label_mapper = json.load(f)
 
-    model=loader.load_checkpoint(model_name)
+    model=loader.load_checkpoint(model_name,gpu=gpu)
 
     img=process_image(image_path)
     
@@ -110,27 +110,19 @@ def predict(image_path, model_name, topk=10, categories='', gpu=False):
     
     firstTopX,SecondTopX=expResult.topk(topk)
     
-    #probs = torch.nn.functional.softmax(firstTopX.data, dim=1).numpy()[0]
+    probs = torch.nn.functional.softmax(firstTopX.data, dim=1).numpy()[0]
     #classes = SecondTopX.data.numpy()[0]
 
-    probs = firstTopX.detach().numpy().tolist()[0] 
+    #probs = firstTopX.detach().numpy().tolist()[0] 
     classes = SecondTopX.detach().numpy().tolist()[0]
     
-    print('top x')
-    print(firstTopX)
-
     # Convert indices to classes
     idx_to_class = {val: key for key, val in    
                                       model.class_to_idx.items()}
     #labels = [label_mapper[str(lab)] for lab in SecondTopX]
-    print('secondtopx')
-    print(SecondTopX)
-    print("idxto class")
-    print(idx_to_class)
     labels  = [idx_to_class[y] for y in classes]
     flowers=[categories[idx_to_class[i]] for i in classes]
-    print('flowers')
-    print(flowers)
+  
     return probs,flowers
 
 
@@ -180,6 +172,11 @@ if __name__=="__main__":
     else:
         category_names='cat_to_name.json'
 
+    if(args.gpu):
+            device='cuda'
+    else:
+        device='cpu'
+
    # show_prediction(image_path=input_name,model=checkpoint,category_names=category_names)
 
    
@@ -187,7 +184,7 @@ if __name__=="__main__":
         categories = json.load(f)
 
     # run the prediction
-    probabilities,labels=predict(input_name,checkpoint,topk=5,categories=categories)
+    probabilities,labels=predict(input_name,checkpoint,topk=5,categories=categories,gpu=device)
 
     # show prediction
     print('predict results')

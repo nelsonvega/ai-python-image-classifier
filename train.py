@@ -28,6 +28,9 @@ def train_model(image_datasets,dataloaders,dataset_sizes, arch='vgg19', hidden_u
     
     # TODO: Build and train your network
 
+    if(not torch.cuda.is_available() and device=='cuda'):
+        device='cpu'
+
     input_size=25088
     if(arch == 'vgg19'):
         model = models.vgg19(pretrained=True)
@@ -142,7 +145,7 @@ if __name__=="__main__":
     image_datasets,dataloaders,dataset_sizes,class_names=initializer.init(root_dir="flowers",stages=['train','valid','test'],train_stage='train')
 
     if(args.epochs):
-        eps=args.epochs,
+        eps=args.epochs
     else:
         eps=25
     if(args.learning_rate):
