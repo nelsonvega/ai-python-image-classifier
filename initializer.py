@@ -48,7 +48,7 @@ def init(root_dir,stages=['train', 'valid', 'test'],train_stage='train'):
     image_datasets = {x: datasets.ImageFolder(dirs[x],   transform=data_transforms[x]) for x in stages}
 
     # TODO: Using the image datasets and the trainforms, define the dataloaders
-    dataloaders = {x: torch.utils.data.DataLoader(image_datasets[x], batch_size=32, shuffle=True) for x in stages}
+    dataloaders = {x: torch.utils.data.DataLoader(image_datasets[x], batch_size=64, shuffle=True) for x in stages}
 
     dataset_sizes = {x: len(image_datasets[x]) 
                                     for x in stages}

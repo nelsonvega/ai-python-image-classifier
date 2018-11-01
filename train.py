@@ -24,7 +24,7 @@ from torch.optim import lr_scheduler
 
 
 def train_model(image_datasets,dataloaders,dataset_sizes, arch='vgg19', hidden_units=4096, 
-                num_epochs=25, learning_rate=0.001, device='cpu'):
+                num_epochs=25, learning_rate=0.001,dropout=0.5, device='cpu'):
     
     # TODO: Build and train your network
 
@@ -59,8 +59,13 @@ def train_model(image_datasets,dataloaders,dataset_sizes, arch='vgg19', hidden_u
     scheduler = lr_scheduler.StepLR(optimizer, step_size=4, gamma=0.1)
     
     classifier = nn.Sequential(OrderedDict([
+                              ('dropout',nn.Dropout(dropout)),
                               ('fc1', nn.Linear(input_size, hidden_units)),
                               ('relu', nn.ReLU()),
+                              ('hidden_layer1', nn.Linear(hidden_units, 90)),
+                              ('relu1', nn.ReLU()),
+                              ('hidden_layer2',nn.Linear(90,80)),
+                              ('relu',nn.ReLU()),
                               ('fc2', nn.Linear(hidden_units, 102)),
                               ('output', nn.LogSoftmax(dim=1))
                               ]))
@@ -80,6 +85,10 @@ def train_model(image_datasets,dataloaders,dataset_sizes, arch='vgg19', hidden_u
     for epoch in range(num_epochs):
         print('Iteration {}/{}'.format(epoch, num_epochs - 1))
         print('-' * 10)
+
+        if not nn.cuda.is_available() and device=='cuda':
+            device='cpu'
+
         for phase in ['train', 'valid']:
             if phase == 'train':
                 scheduler.step()
@@ -97,8 +106,8 @@ def train_model(image_datasets,dataloaders,dataset_sizes, arch='vgg19', hidden_u
                 optimizer.zero_grad()
 
                 with torch.set_grad_enabled(phase == 'train'):
-                    outputs = model(inputs)
-                    _, preds = torch.max(outputs, 1)
+                    outputs = model.forward(inputs)
+                    _, preds = torch.exp(outputs, 1)
                     loss = criterion(outputs, labels)
 
                     # backward + optimize only if in training phase

@@ -30,13 +30,11 @@ def imshow(image, ax=None, title=None):
         fig, ax = plt.subplots()
     
     # PyTorch tensors assume the color channel is the first dimension
-    # but matplotlib assumes is the third dimension
-    image = image.transpose((1, 2, 0))
-    
+    # but matplotlib assumes is the third dimension    
     # Undo preprocessing
-    mean = np.array([0.485, 0.456, 0.406])
-    std = np.array([0.229, 0.224, 0.225])
-    image = std * image + mean
+    #mean = np.array([0.485, 0.456, 0.406])
+    #std = np.array([0.229, 0.224, 0.225])
+    #image = std * image + mean
     
     # Image needs to be clipped between 0 and 1 or it looks like noise when displayed
     image = np.clip(image, 0, 1)
@@ -44,45 +42,32 @@ def imshow(image, ax=None, title=None):
     ax.imshow(image)
     
     return ax
+
+def showImageFrompath(image_path):
+
+    image = Image.open(image_path)
+
+    import matplotlib.pyplot as plt
+    import matplotlib.image as mpimg
+    img=mpimg.imread(image_path)
+    imgplot = plt.imshow(img)
+    plt.show()
+
+
 def process_image(image_path):
-    ''' Scales, crops, and normalizes a PIL image for a PyTorch model,
-        returns an Numpy array
-    '''
+    
 
-    #image_pil=Image.open(image_path)
+    original_image=Image.open(image_path)
 
-    loader = transforms.Compose([
-        transforms.Resize(256), 
-        transforms.CenterCrop(224), 
-        transforms.ToTensor()])
-    
-    image_pl = Image.open(image_path)
-    imagepl_ft = loader(image_pl).float()
-    
-    #cropped_size=256,256
-    
-    #image_pil.thumbnail(cropped_size)
-    
-    #left_margin = (image_pil.width-224)/2
-    #bottom_margin = (image_pil.height-224)/2
-    #right_margin = left_margin + 224
-    #top_margin = bottom_margin + 224
-    #image_pil = image_pil.crop((left_margin, bottom_margin, right_margin,
-    #                 top_margin))
-   
-    
-    np_image=np.array(imagepl_ft)
-    
-    #np_image=np_image/255
-    
-    mean = np.array([0.485, 0.456, 0.406]) 
-    std = np.array([0.229, 0.224, 0.225])
-    #np_image = (np_image - mean)/std
-    
-    #np_image=np_image.transpose((2,0,1))
+    loader = transforms.Compose([ # Here as we did with the traini ng data we will define a set of
+        # transfomations that we will apply to the PIL image
+        transforms.Resize(256),
+        transforms.CenterCrop(224),
+        transforms.ToTensor(),
+        transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
+    ])
 
-    np_image = (np.transpose(np_image, (1, 2, 0)) - mean)/std    
-    np_image = np.transpose(np_image, (2, 0, 1))
+    np_image = loader(original_image)
 
     
     return np_image
@@ -98,9 +83,9 @@ def predict(image_path, model_name, topk=10, categories='', gpu=False):
 
     model=loader.load_checkpoint(model_name,gpu=gpu)
 
+
     img=process_image(image_path)
     
-    img=torch.from_numpy(img).type(torch.FloatTensor)
     
     inpt=img.unsqueeze(0)
     
@@ -135,6 +120,7 @@ def show_prediction(image_path,probabilities,labels, categories):
     flower_index=image_path.split('/')[2]
     name=categories[flower_index]
     img=process_image(image_path)
+    
     imshow(img,ax)
     
     plt.subplot(2,1,2)
@@ -182,7 +168,8 @@ if __name__=="__main__":
    
     with open(category_names, 'r') as f:
         categories = json.load(f)
-
+    print('Original Image')
+    #showImageFrompath(input_name)  
     # run the prediction
     probabilities,labels=predict(input_name,checkpoint,topk=5,categories=categories,gpu=device)
 
