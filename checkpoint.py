@@ -30,7 +30,7 @@ def load_checkpoint(checkpoint_name='ic-model.pth',gpu="True"):
 
         #loading the actual model based on the saved architecture
         model.classifier = checkpoint['classifier']
-        model.optimizer = checkpoint('optimizer')
+        #model.optimizer = checkpoint('optimizer')
 
 
     else:

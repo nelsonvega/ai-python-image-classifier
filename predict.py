@@ -32,9 +32,9 @@ def imshow(image, ax=None, title=None):
     # PyTorch tensors assume the color channel is the first dimension
     # but matplotlib assumes is the third dimension    
     # Undo preprocessing
-    #mean = np.array([0.485, 0.456, 0.406])
-    #std = np.array([0.229, 0.224, 0.225])
-    #image = std * image + mean
+    mean = np.array([0.485, 0.456, 0.406])
+    std = np.array([0.229, 0.224, 0.225])
+    image = std * image + mean
     
     # Image needs to be clipped between 0 and 1 or it looks like noise when displayed
     image = np.clip(image, 0, 1)
@@ -72,12 +72,16 @@ def process_image(image_path):
     
     return np_image
 
-def predict(image_path, model_name, topk=10, categories='', gpu=False):
+def predict(image_path, model_name, topk=10, categories='', device='cuda'):
     ''' Predict the class (or classes) of an image using a trained deep learning model.
     '''
     
     # TODO: Implement the code to predict the class from an image file
 
+    if(device=='cuda'):
+        gpu=True
+    else:
+        gpu=False
     with open('cat_to_name.json', 'r') as f:
         label_mapper = json.load(f)
 
@@ -171,7 +175,7 @@ if __name__=="__main__":
     print('Original Image')
     #showImageFrompath(input_name)  
     # run the prediction
-    probabilities,labels=predict(input_name,checkpoint,topk=5,categories=categories,gpu=device)
+    probabilities,labels=predict(input_name,checkpoint,topk=5,categories=categories,device=device)
 
     # show prediction
     print('predict results')

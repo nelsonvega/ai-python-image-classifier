@@ -23,7 +23,7 @@ from torch.optim import lr_scheduler
 
 
 
-def train_model(image_datasets,dataloaders,dataset_sizes, arch='vgg19', hidden_units=4096, 
+def train_model(image_datasets,dataloaders,dataset_sizes, arch='vgg19', hidden_units=120, 
                 num_epochs=25, learning_rate=0.001,dropout=0.5, device='cpu'):
     
     # TODO: Build and train your network
@@ -44,19 +44,20 @@ def train_model(image_datasets,dataloaders,dataset_sizes, arch='vgg19', hidden_u
         input_size=21725184
     elif(arch =='densenet161'):
         model = models.densenet161(pretrained=True)
-    else:
-        model = models.inception_v3(pretrained=True)
-
-    
+    print(arch)
+    print(model)
       # Features, removing the last layer
-    print('arch'+arch+'input size:'+str(input_size))
+    print('Architecture:'+arch+' Input size:'+str(input_size)+ ' Device :' +device)
     
-    # Criteria NLLLoss which is recommended with Softmax final layer
-    criterion = nn.NLLLoss()
+    
+    criterion = nn.CrossEntropyLoss()
+    print(learning_rate)
     # Observe that all parameters are being optimized
-    optimizer = optim.Adam(model.classifier.parameters(), lr=learning_rate)
+    #optimizer = optim.Adam(model.classifier.parameters(), lr=learning_rate)
+    optimizer = optim.SGD(model.parameters(), lr=learning_rate, momentum=0.9)
+
     # Decay LR by a factor of 0.1 every 4 epochs
-    scheduler = lr_scheduler.StepLR(optimizer, step_size=4, gamma=0.1)
+    scheduler = lr_scheduler.StepLR(optimizer, step_size=7, gamma=0.1)
     
     classifier = nn.Sequential(OrderedDict([
                               ('dropout',nn.Dropout(dropout)),
@@ -65,8 +66,8 @@ def train_model(image_datasets,dataloaders,dataset_sizes, arch='vgg19', hidden_u
                               ('hidden_layer1', nn.Linear(hidden_units, 90)),
                               ('relu1', nn.ReLU()),
                               ('hidden_layer2',nn.Linear(90,80)),
-                              ('relu',nn.ReLU()),
-                              ('fc2', nn.Linear(hidden_units, 102)),
+                              ('relu3',nn.ReLU()),
+                              ('fc2', nn.Linear(80, 102)),
                               ('output', nn.LogSoftmax(dim=1))
                               ]))
 
@@ -86,9 +87,6 @@ def train_model(image_datasets,dataloaders,dataset_sizes, arch='vgg19', hidden_u
         print('Iteration {}/{}'.format(epoch, num_epochs - 1))
         print('-' * 10)
 
-        if not nn.cuda.is_available() and device=='cuda':
-            device='cpu'
-
         for phase in ['train', 'valid']:
             if phase == 'train':
                 scheduler.step()
@@ -106,18 +104,22 @@ def train_model(image_datasets,dataloaders,dataset_sizes, arch='vgg19', hidden_u
                 optimizer.zero_grad()
 
                 with torch.set_grad_enabled(phase == 'train'):
-                    outputs = model.forward(inputs)
-                    _, preds = torch.exp(outputs, 1)
+                    #outputs = model.forward(inputs)
+                    #preds = torch.exp(outputs).data
+                    outputs = model(inputs)
+                    _, preds = torch.max(outputs, 1)
+                    
                     loss = criterion(outputs, labels)
 
                     # backward + optimize only if in training phase
                     if phase == 'train':
                         loss.backward()
                         optimizer.step()
-
+            
                 # statistics
                 running_loss += loss.item() * inputs.size(0)
                 running_corrects += torch.sum(preds == labels.data)
+      
 
             epoch_loss = running_loss / dataset_sizes[phase]
             epoch_acc = running_corrects.double() / dataset_sizes[phase]
@@ -175,7 +177,7 @@ if __name__=="__main__":
     if(args.arch):
         architecture=args.arch
     else:
-        architecture='vgg19'
+        architecture='resnet18'
 
     if(args.checkpoint_name):
         checkpoint_name=args.checkpoint_name
@@ -194,4 +196,5 @@ if __name__=="__main__":
 
     print(model)
     class_to_idx=image_datasets['train'].class_to_idx
-    checkpoint.save_checkpoint(model=model,checkpoint_name=checkpoint_name,hidden_units=hidden_units,class_to_idx=class_to_idx)
+ 
+loader.save_checkpoint(model=model,checkpoint_name=checkpoint_name,arch=architecture,hidden_units=hidden_units,class_to_idx=class_to_idx)
