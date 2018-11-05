@@ -200,4 +200,4 @@ if __name__=="__main__":
     print(model)
     class_to_idx=image_datasets['train'].class_to_idx
  
-loader.save_checkpoint(model=model,checkpoint_name=checkpoint_name,arch=architecture,hidden_units=hidden_units,class_to_idx=class_to_idx,learning_rate=learning_rate)
+    loader.save_checkpoint(model=model,checkpoint_name=checkpoint_name,arch=architecture,hidden_units=hidden_units,class_to_idx=class_to_idx,learning_rate=learning_rate)

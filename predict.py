@@ -59,28 +59,13 @@ def process_image(image_path):
     image_pl = Image.open(image_path)
     imagepl_ft = loader(image_pl).float()
     
-    #cropped_size=256,256
-    
-    #image_pil.thumbnail(cropped_size)
-    
-    #left_margin = (image_pil.width-224)/2
-    #bottom_margin = (image_pil.height-224)/2
-    #right_margin = left_margin + 224
-    #top_margin = bottom_margin + 224
-    #image_pil = image_pil.crop((left_margin, bottom_margin, right_margin,
-    #                 top_margin))
-   
-    
     np_image=np.array(imagepl_ft)
     
     #np_image=np_image/255
     
     mean = np.array([0.485, 0.456, 0.406]) 
     std = np.array([0.229, 0.224, 0.225])
-    #np_image = (np_image - mean)/std
-    
-    #np_image=np_image.transpose((2,0,1))
-
+   
     np_image = (np.transpose(np_image, (1, 2, 0)) - mean)/std    
     np_image = np.transpose(np_image, (2, 0, 1))
 
