@@ -23,7 +23,7 @@ from torch.optim import lr_scheduler
 
 
 
-def train_model(image_datasets,dataloaders,dataset_sizes, arch='vgg19', hidden_units=120, 
+def train_model(image_datasets,dataloaders,dataset_sizes, arch='vgg19', hidden_units=4096, 
                 num_epochs=25, learning_rate=0.001,dropout=0.5, device='cpu'):
     
     # TODO: Build and train your network
@@ -46,35 +46,36 @@ def train_model(image_datasets,dataloaders,dataset_sizes, arch='vgg19', hidden_u
         model = models.densenet161(pretrained=True)
     print(arch)
     print(model)
-      # Features, removing the last layer
+    # Features, removing the last layer
     print('Architecture:'+arch+' Input size:'+str(input_size)+ ' Device :' +device)
     
-    
-    criterion = nn.CrossEntropyLoss()
-    print(learning_rate)
-    # Observe that all parameters are being optimized
-    #optimizer = optim.Adam(model.classifier.parameters(), lr=learning_rate)
-    optimizer = optim.SGD(model.parameters(), lr=learning_rate, momentum=0.9)
 
-    # Decay LR by a factor of 0.1 every 4 epochs
-    scheduler = lr_scheduler.StepLR(optimizer, step_size=7, gamma=0.1)
-    
+    # Extend the existing architecture with new layers
     classifier = nn.Sequential(OrderedDict([
-                              ('dropout',nn.Dropout(dropout)),
+                              ('dropout',nn.Dropout()),
                               ('fc1', nn.Linear(input_size, hidden_units)),
-                              ('relu', nn.ReLU()),
-                              ('hidden_layer1', nn.Linear(hidden_units, 90)),
-                              ('relu1', nn.ReLU()),
-                              ('hidden_layer2',nn.Linear(90,80)),
-                              ('relu3',nn.ReLU()),
-                              ('fc2', nn.Linear(80, 102)),
-                              ('output', nn.LogSoftmax(dim=1))
+                              ('relu', nn.ReLU(inplace=True)),
+                              ('drop1', nn.Dropout()),
+                              ('hidden_layer2',nn.Linear(4096,4096)),
+                              ('relu4',nn.ReLU(inplace=True)),
+                              ('fc2', nn.Linear(4096, 102))
+                             # ('output', nn.LogSoftmax(dim=1))
                               ]))
 
     for param in model.parameters():
         param.requires_grad = False
     
     model.classifier = classifier   
+       
+    criterion = nn.CrossEntropyLoss()
+    # Observe that all parameters are being optimized
+    #optimizer = optim.Adam(model.classifier.parameters(), lr=learning_rate)
+    optimizer = optim.SGD(list(filter(lambda p: p.requires_grad, model.parameters())), lr=learning_rate, momentum=0.9)
+
+    # Decay LR by a factor of 0.1 every 4 epochs
+    scheduler = lr_scheduler.StepLR(optimizer, step_size=7, gamma=0.1)
+    
+ 
     
     since = time.time()
 
@@ -96,17 +97,19 @@ def train_model(image_datasets,dataloaders,dataset_sizes, arch='vgg19', hidden_u
 
             running_loss = 0.0
             running_corrects = 0
-
+            print('Phase:'+phase)
             for inputs, labels in dataloaders[phase]:
                 inputs = inputs.to(device)
                 labels = labels.to(device)
-
+               
+              
                 optimizer.zero_grad()
 
                 with torch.set_grad_enabled(phase == 'train'):
                     #outputs = model.forward(inputs)
                     #preds = torch.exp(outputs).data
                     outputs = model(inputs)
+                 
                     _, preds = torch.max(outputs, 1)
                     
                     loss = criterion(outputs, labels)
@@ -177,7 +180,7 @@ if __name__=="__main__":
     if(args.arch):
         architecture=args.arch
     else:
-        architecture='resnet18'
+        architecture='vgg16'
 
     if(args.checkpoint_name):
         checkpoint_name=args.checkpoint_name

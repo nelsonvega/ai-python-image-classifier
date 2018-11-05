@@ -32,4 +32,4 @@ def test_acuracy(dataloaders,checkpoint_name='ic-model.pth',gpu=False):
 if __name__=="__main__":
      
     image_datasets,dataloaders,dataset_sizes,class_names=initializer.init(root_dir="flowers",stages=['train','valid','test'],train_stage='train')
-    test_acuracy(dataloaders,checkpoint_name='ic-model.pth',gpu=False)
+    test_acuracy(dataloaders,checkpoint_name='ic-model.pth',gpu=True)

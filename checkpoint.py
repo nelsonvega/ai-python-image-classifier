@@ -71,18 +71,18 @@ def load_checkpoint(checkpoint_name='ic-model.pth',gpu="True"):
     return model
 
 
-def save_checkpoint(model,checkpoint_name='ic-model.pth',hidden_units=4096,class_to_idx={}):
+def save_checkpoint(model,checkpoint_name='ic-model.pth',arch='vgg16',hidden_units=4096,class_to_idx={}):
     # TODO: Save the checkpoint 
 # Save a checkpoint 
     model.class_to_idx =class_to_idx
 
     checkpoint = {
-        'arch': model.arch,
+        'arch': arch,
         'class_to_idx': model.class_to_idx, 
         'state_dict': model.state_dict(),
         'hidden_units': hidden_units,
         'classifier':model.classifier,
-        'optimizer':model.optimizer   
+       # 'optimizer':model.optimizer   
     }
 
     torch.save(checkpoint, checkpoint_name)
