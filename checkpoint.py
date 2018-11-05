@@ -30,14 +30,15 @@ def load_checkpoint(checkpoint_name='ic-model.pth',gpu="True"):
 
     #loading the actual model based on the saved architecture
     model.classifier = checkpoint['classifier']
-    model.optimizer =   optim.SGD(list(filter(lambda p: p.requires_grad, model.parameters())), lr=0.001, momentum=0.9)
+    learning_rate=checkpoint['learning_rate']
+    model.optimizer =   optim.SGD(list(filter(lambda p: p.requires_grad, model.parameters())), lr=learning_rate, momentum=0.9)
 
     model.class_to_idx = checkpoint['class_to_idx']
     model.load_state_dict(checkpoint['state_dict'])
     return model
 
 
-def save_checkpoint(model,checkpoint_name='ic-model.pth',arch='vgg16',hidden_units=4096,class_to_idx={}):
+def save_checkpoint(model,checkpoint_name='ic-model.pth',arch='vgg16',hidden_units=4096,class_to_idx={},learning_rate=0.001):
     # TODO: Save the checkpoint 
 # Save a checkpoint 
     model.class_to_idx =class_to_idx
@@ -48,6 +49,7 @@ def save_checkpoint(model,checkpoint_name='ic-model.pth',arch='vgg16',hidden_uni
         'state_dict': model.state_dict(),
         'hidden_units': hidden_units,
         'classifier':model.classifier,
+        'learning_rate':learning_rate
        # 'optimizer':model.optimizer   
     }
 
