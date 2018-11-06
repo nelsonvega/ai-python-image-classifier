@@ -5,8 +5,6 @@
 Project code for Udacity's AI Programming with Python Nanodegree program. In this project, students first develop code for an image classifier built with PyTorch, then convert it into a command line application.
 
 
-# Description
-
 ## Goal
 * Design a CNN using Pytorch to classify the flower data set.
 * Train the CNN and achieve at least 70%
@@ -36,6 +34,9 @@ Project code for Udacity's AI Programming with Python Nanodegree program. In thi
 
 ## Reference
 1. [Pytorch documentation: Transfer learning](https://pytorch.org/tutorials/beginner/transfer_learning_tutorial.html#load-data)
+2. [Udacity Transfer Learning Repo](https://github.com/udacity/DL_PyTorch)
+3. [Udacity : AI Python starting point Repo](https://github.com/udacity/aipnd-project)
+3. [Medium : Deep Learning With PyTorch by Josh Bernhard](https://medium.com/@josh_2774/deep-learning-with-pytorch-9574e74d17ad)
 
 
 ## Tools
