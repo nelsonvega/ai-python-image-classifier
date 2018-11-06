@@ -3,6 +3,7 @@ import time
 import copy
 
 import seaborn as sns
+import torch.optim as optim
 
 import torch
 import torchvision
@@ -22,67 +23,34 @@ def load_checkpoint(checkpoint_name='ic-model.pth',gpu="True"):
         checkpoint = torch.load(checkpoint_name, map_location=lambda storage, loc: storage)
 
     hidden_units = checkpoint['hidden_units']
-    if(not (checkpoint.get('classifier') is None)):
+    print('loading the latest version')   
+    model = getattr(torchvision.models, checkpoint['arch'])(pretrained=True)
+    
+    #reading values from the checkpoint
 
-        model = getattr(torchvision.models, checkpoint['arch'])(pretrained=True)
-        
-        #reading values from the checkpoint
-
-        #loading the actual model based on the saved architecture
-        model.classifier = checkpoint['classifier']
-        model.optimizer = checkpoint('optimizer')
-
-
-    else:
-        arch = checkpoint['arch']
-
-        #loading the actual model based on the saved architecture
-
-        if(arch == 'VGG'):
-            print('vgg selected')
-            model = models.vgg19(pretrained=True)
-        elif(arch =="alexnet"):
-            model = models.alexnet(pretrained=True)
-        elif(arch =='vgg16'):
-            model = models.vgg16(pretrained=True)
-        elif(arch =='squeezenet'):
-            model = models.squeezenet1_0(pretrained=True)
-        elif(arch =='densenet161'):
-            model = models.densenet161(pretrained=True)
-        else:
-            model = models.inception_v3(pretrained=True)
-        for param in model.parameters():
-            param.requires_grad = False
-        
-        input_size=get_inputsize(arch)
-
-    #  Create the classifier
-        classifier = nn.Sequential(OrderedDict([
-                                ('fc1', nn.Linear(input_size, hidden_units)),
-                                ('relu', nn.ReLU()),
-                                ('fc2', nn.Linear(hidden_units, 102)),
-                                ('output', nn.LogSoftmax(dim=1))
-                                ]))        
-        #Assign values
-        model.classifier=classifier
+    #loading the actual model based on the saved architecture
+    model.classifier = checkpoint['classifier']
+    learning_rate=checkpoint['learning_rate']
+    model.optimizer =   optim.SGD(list(filter(lambda p: p.requires_grad, model.parameters())), lr=learning_rate, momentum=0.9)
 
     model.class_to_idx = checkpoint['class_to_idx']
     model.load_state_dict(checkpoint['state_dict'])
     return model
 
 
-def save_checkpoint(model,checkpoint_name='ic-model.pth',hidden_units=4096,class_to_idx={}):
+def save_checkpoint(model,checkpoint_name='ic-model.pth',arch='vgg16',hidden_units=4096,class_to_idx={},learning_rate=0.001):
     # TODO: Save the checkpoint 
 # Save a checkpoint 
     model.class_to_idx =class_to_idx
 
     checkpoint = {
-        'arch': model.arch,
+        'arch': arch,
         'class_to_idx': model.class_to_idx, 
         'state_dict': model.state_dict(),
         'hidden_units': hidden_units,
         'classifier':model.classifier,
-        'optimizer':model.optimizer   
+        'learning_rate':learning_rate
+       # 'optimizer':model.optimizer   
     }
 
     torch.save(checkpoint, checkpoint_name)
