@@ -17,11 +17,11 @@ def init(root_dir,stages=['train', 'valid', 'test'],train_stage='train'):
             stages[1]: valid_dir, 
             stages[2] : test_dir}
 
-
+    print(dirs)
     # TODO: Define your transforms for the training, validation, and testing sets
     data_transforms  = {
         stages[0]: transforms.Compose([
-            transforms.RandomRotation(45),
+            transforms.RandomRotation(50),
             transforms.RandomResizedCrop(224),
             transforms.RandomHorizontalFlip(),
             transforms.ToTensor(),
@@ -48,12 +48,17 @@ def init(root_dir,stages=['train', 'valid', 'test'],train_stage='train'):
     image_datasets = {x: datasets.ImageFolder(dirs[x],   transform=data_transforms[x]) for x in stages}
 
     # TODO: Using the image datasets and the trainforms, define the dataloaders
-    dataloaders = {x: torch.utils.data.DataLoader(image_datasets[x], batch_size=32, shuffle=True) for x in stages}
+    dataloaders = {x: torch.utils.data.DataLoader(image_datasets[x], batch_size=64, shuffle=True) for x in stages}
 
     dataset_sizes = {x: len(image_datasets[x]) 
                                     for x in stages}
 
+
+
     class_names = image_datasets[train_stage].classes
+
+
+    print(dataset_sizes)
 
     return image_datasets,dataloaders,dataset_sizes,class_names
             

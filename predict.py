@@ -59,44 +59,37 @@ def process_image(image_path):
     image_pl = Image.open(image_path)
     imagepl_ft = loader(image_pl).float()
     
-    #cropped_size=256,256
-    
-    #image_pil.thumbnail(cropped_size)
-    
-    #left_margin = (image_pil.width-224)/2
-    #bottom_margin = (image_pil.height-224)/2
-    #right_margin = left_margin + 224
-    #top_margin = bottom_margin + 224
-    #image_pil = image_pil.crop((left_margin, bottom_margin, right_margin,
-    #                 top_margin))
-   
-    
     np_image=np.array(imagepl_ft)
     
     #np_image=np_image/255
     
     mean = np.array([0.485, 0.456, 0.406]) 
     std = np.array([0.229, 0.224, 0.225])
-    #np_image = (np_image - mean)/std
-    
-    #np_image=np_image.transpose((2,0,1))
-
+   
     np_image = (np.transpose(np_image, (1, 2, 0)) - mean)/std    
     np_image = np.transpose(np_image, (2, 0, 1))
 
     
     return np_image
 
-def predict(image_path, model_name, topk=10, categories='', gpu=False):
+def predict(image_path, model_name, topk=10, categories='', device='cuda'):
     ''' Predict the class (or classes) of an image using a trained deep learning model.
     '''
+
+    if(not torch.cuda.is_available() and device=='cuda'):
+        device='cpu'
     
     # TODO: Implement the code to predict the class from an image file
 
     with open('cat_to_name.json', 'r') as f:
         label_mapper = json.load(f)
 
+ 
+    gpu=(device=='cuda')
+
     model=loader.load_checkpoint(model_name,gpu=gpu)
+
+    model.to('cpu')
 
     img=process_image(image_path)
     
@@ -184,7 +177,7 @@ if __name__=="__main__":
         categories = json.load(f)
 
     # run the prediction
-    probabilities,labels=predict(input_name,checkpoint,topk=5,categories=categories,gpu=device)
+    probabilities,labels=predict(input_name,checkpoint,topk=5,categories=categories,device=device)
 
     # show prediction
     print('predict results')
