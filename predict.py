@@ -89,7 +89,7 @@ def predict(image_path, model_name, topk=10, categories='', device='cuda'):
 
     model=loader.load_checkpoint(model_name,gpu=gpu)
 
-    model.to(device)
+    model.to('cpu')
 
     img=process_image(image_path)
     
